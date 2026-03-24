@@ -102,8 +102,8 @@ invoke_skill() {
   local working_dir
   working_dir=$(mktemp -d)
 
-  # Copy app contents to temp dir
-  cp -a "${fixture_dir}/app/." "$working_dir/"
+  # Copy app contents to temp dir (exclude build artifacts)
+  rsync -a --exclude='node_modules' --exclude='dist' --exclude='__pycache__' --exclude='.venv' "${fixture_dir}/app/" "$working_dir/"
 
   # Initialize git repo (needed for diff later)
   (cd "$working_dir" && git init -q && git add -A && git commit -q -m "pristine") 2>/dev/null
@@ -115,14 +115,31 @@ invoke_skill() {
   skill_content=$(cat "${SCRIPT_DIR}/../SKILL.md")
 
   # Invoke Claude in headless mode with 10-minute timeout
+  # Note: macOS doesn't have `timeout`, so we use a background process with kill
   log "  Claude working in: ${working_dir}"
-  timeout 600 claude -p "[SKILL INSTRUCTIONS]
+  (
+    claude -p "[SKILL INSTRUCTIONS]
 ${skill_content}
 [/SKILL INSTRUCTIONS]
 
 ${prompt}" \
-    --allowedTools Read,Write,Edit,Glob,Grep,Bash \
-    --cwd "$working_dir" 2>/dev/null || true
+      --allowedTools Read,Write,Edit,Glob,Grep,Bash \
+      --cwd "$working_dir" 2>/dev/null
+  ) &
+  local claude_pid=$!
+  local elapsed=0
+  while kill -0 "$claude_pid" 2>/dev/null; do
+    sleep 5
+    elapsed=$((elapsed + 5))
+    if [ "$elapsed" -ge 600 ]; then
+      log "  WARNING: Claude timed out after 10 minutes, killing..."
+      kill "$claude_pid" 2>/dev/null || true
+      wait "$claude_pid" 2>/dev/null || true
+      break
+    fi
+    log "  ...Claude working (${elapsed}s)"
+  done
+  wait "$claude_pid" 2>/dev/null || true
 
   echo "$working_dir"
 }
