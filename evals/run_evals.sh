@@ -116,15 +116,16 @@ invoke_skill() {
 
   # Invoke Claude in headless mode with 10-minute timeout
   # Note: macOS doesn't have `timeout`, so we use a background process with kill
+  # Note: Use full path to claude binary since aliases don't expand in bash scripts
+  # Note: Claude CLI has no --cwd flag, so we cd into the working dir
+  local claude_bin
+  claude_bin=$(command -v claude 2>/dev/null || echo "claude")
   log "  Claude working in: ${working_dir}"
   (
-    claude -p "[SKILL INSTRUCTIONS]
-${skill_content}
-[/SKILL INSTRUCTIONS]
-
-${prompt}" \
-      --allowedTools Read,Write,Edit,Glob,Grep,Bash \
-      --cwd "$working_dir" 2>/dev/null
+    cd "$working_dir" && \
+    "$claude_bin" --dangerously-skip-permissions -p "${prompt}" \
+      --system-prompt "${skill_content}" \
+      --allowedTools Read,Write,Edit,Glob,Grep,Bash >/dev/null 2>/dev/null
   ) &
   local claude_pid=$!
   local elapsed=0
@@ -291,8 +292,8 @@ for fixture in $FIXTURES; do
       continue
     fi
 
-    # Save diff
-    (cd "$WORKING_DIR" && git diff HEAD) > "${RESULTS_DIR}/diff.patch" 2>/dev/null || true
+    # Save diff (add all changes first so new files are included)
+    (cd "$WORKING_DIR" && git add -A && git diff --cached HEAD) > "${RESULTS_DIR}/diff.patch" 2>/dev/null || true
 
     # Run layers
     RUBRIC_SCORE=""
