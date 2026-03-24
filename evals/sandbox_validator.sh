@@ -90,7 +90,7 @@ build_app() {
   log "Building Docker image..."
   local temp_dir
   temp_dir=$(mktemp -d)
-  rsync -a --exclude='node_modules' --exclude='dist' --exclude='__pycache__' --exclude='.venv' --exclude='.git' "${modified_dir}/" "${temp_dir}/"
+  rsync -a --exclude='node_modules' --exclude='dist' --exclude='__pycache__' --exclude='.venv' --exclude='.git' --exclude='package-lock.json' --exclude='.npmrc' "${modified_dir}/" "${temp_dir}/"
 
   IMAGE_TAG="eval-${FIXTURE_NAME}-${RUN_ID}"
   docker build -t "${IMAGE_TAG}" -f "${fixture_dir}/Dockerfile" "${temp_dir}" >&2
