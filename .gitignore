@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+package-lock.json
+.npmrc
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Build artifacts
+dist/
+
+# Environment
+.env
+.env.*
+
+# Eval results (generated)
+evals/results/*
+!evals/results/.gitignore
+
+# OS
+.DS_Store
