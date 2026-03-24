@@ -339,10 +339,10 @@ validate_cancel() {
 
   log "Response: ${response}"
 
-  # Poll Seam sandbox for access codes to be removed (up to 30s)
-  log "Polling Seam for access code removal (up to 30s)..."
+  # Poll Seam sandbox for access codes to be removed (up to 60s)
+  log "Polling Seam for access code removal (up to 60s)..."
   local removed="no"
-  for i in $(seq 1 6); do
+  for i in $(seq 1 12); do
     sleep 5
     local codes active_count
     codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
@@ -358,7 +358,7 @@ print(len(active))
       log "Access codes removed after $((i * 5))s"
       break
     fi
-    log "  ...still active (${i}/6)"
+    log "  ...still active (${i}/12)"
   done
 
   if [ "$removed" = "yes" ]; then
