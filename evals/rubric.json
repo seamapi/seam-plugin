@@ -1,0 +1,10 @@
+{
+  "categories": [
+    { "name": "api_path_selection", "weight": 15, "check": "api_path_match" },
+    { "name": "file_targeting", "weight": 20, "check": "files_modified_match" },
+    { "name": "integration_placement", "weight": 20, "check": "calls_in_expected_functions" },
+    { "name": "api_correctness", "weight": 20, "check": "required_params_present" },
+    { "name": "lifecycle_completeness", "weight": 15, "check": "all_handlers_modified" },
+    { "name": "webhook_setup", "weight": 10, "check": "webhook_route_added" }
+  ]
+}
