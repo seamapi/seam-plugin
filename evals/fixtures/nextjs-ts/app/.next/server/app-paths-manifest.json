@@ -1,6 +1,0 @@
-{
-  "/api/reservations/[id]/route": "app/api/reservations/[id]/route.js",
-  "/api/reservations/route": "app/api/reservations/route.js",
-  "/api/webhooks/payments/route": "app/api/webhooks/payments/route.js",
-  "/health/route": "app/health/route.js"
-}
