@@ -36,10 +36,12 @@ This is the most common path. The PMS pushes reservation data, Seam handles acce
 
 ### 1. Install SDK + initialize
 
+**Do NOT pin to a specific version** — use the latest. The SDK is backwards-compatible.
+
 ```bash
 # Node.js
 npm install seam
-# Python
+# Python — add "seam" to requirements.txt (no version pin)
 pip install seam
 # Ruby
 bundle add seam
