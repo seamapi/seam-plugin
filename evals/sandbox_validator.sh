@@ -244,30 +244,39 @@ validate_create() {
   fi
   log "Reservation created: ${RESERVATION_ID}"
 
-  # Poll Seam sandbox for access code to appear (up to 60s)
+  # Snapshot existing access code IDs before polling (to detect NEW codes only)
+  local pre_codes pre_code_ids
+  pre_codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
+  pre_code_ids=$(echo "$pre_codes" | python3 -c "
+import sys, json
+codes = json.loads(sys.stdin.read())['access_codes']
+print(','.join(c['access_code_id'] for c in codes))
+" 2>/dev/null || echo "")
+
+  # Poll Seam sandbox for a NEW access code to appear (up to 60s)
   log "Polling Seam for access codes on device (up to 60s)..."
-  local found="no"
+  CREATED_CODE_ID=""
   for i in $(seq 1 12); do
     sleep 5
     local codes
     codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
-    local code_count
-    code_count=$(echo "$codes" | python3 -c "
-import sys, json
+    CREATED_CODE_ID=$(echo "$codes" | PRE="$pre_code_ids" python3 -c "
+import sys, json, os
 codes = json.loads(sys.stdin.read())['access_codes']
-active = [c for c in codes if c.get('status') not in ('removing', 'removed')]
-print(len(active))
-" 2>/dev/null || echo "0")
+pre_ids = set(os.environ.get('PRE','').split(','))
+new_codes = [c for c in codes if c['access_code_id'] not in pre_ids and c.get('status') not in ('removing', 'removed')]
+if new_codes:
+    print(new_codes[0]['access_code_id'])
+" 2>/dev/null || echo "")
 
-    if [ "$code_count" -gt 0 ]; then
-      found="yes"
-      log "Access code found on device after $((i * 5))s"
+    if [ -n "$CREATED_CODE_ID" ]; then
+      log "Access code found on device after $((i * 5))s (id: ${CREATED_CODE_ID})"
       break
     fi
     log "  ...not yet (${i}/12)"
   done
 
-  if [ "$found" = "yes" ]; then
+  if [ -n "$CREATED_CODE_ID" ]; then
     log "PASS: CREATE validation succeeded"
     return 0
   else
@@ -339,27 +348,41 @@ validate_cancel() {
 
   log "Response: ${response}"
 
-  # Poll Seam sandbox for access codes to be removed (up to 120s)
-  # Seam automation revocation is variable — can take 5s to 90s+
-  log "Polling Seam for access code removal (up to 120s)..."
+  # Poll Seam sandbox for the SPECIFIC access code created during CREATE to be removed
+  # (checking all codes fails when orphaned codes from prior runs exist on the device)
+  log "Polling Seam for access code removal (up to 60s)..."
   local removed="no"
-  for i in $(seq 1 24); do
+  if [ -z "${CREATED_CODE_ID:-}" ]; then
+    log "WARNING: No CREATED_CODE_ID to track — checking all codes instead"
+  fi
+  for i in $(seq 1 12); do
     sleep 5
-    local codes active_count
+    local codes
     codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
-    active_count=$(echo "$codes" | python3 -c "
-import sys, json
+    local code_gone
+    code_gone=$(echo "$codes" | CODE_ID="${CREATED_CODE_ID:-}" python3 -c "
+import sys, json, os
 codes = json.loads(sys.stdin.read())['access_codes']
-active = [c for c in codes if c.get('status') not in ('removing', 'removed')]
-print(len(active))
-" 2>/dev/null || echo "0")
+code_id = os.environ.get('CODE_ID', '')
+if code_id:
+    # Check if our specific code is gone or removing
+    match = [c for c in codes if c['access_code_id'] == code_id]
+    if not match or match[0].get('status') in ('removing', 'removed'):
+        print('yes')
+    else:
+        print('no')
+else:
+    # Fallback: check if all codes are gone
+    active = [c for c in codes if c.get('status') not in ('removing', 'removed')]
+    print('yes' if len(active) == 0 else 'no')
+" 2>/dev/null || echo "no")
 
-    if [ "$active_count" = "0" ]; then
+    if [ "$code_gone" = "yes" ]; then
       removed="yes"
-      log "Access codes removed after $((i * 5))s"
+      log "Access code removed after $((i * 5))s"
       break
     fi
-    log "  ...still active (${i}/24)"
+    log "  ...still active (${i}/12)"
   done
 
   if [ "$removed" = "yes" ]; then
