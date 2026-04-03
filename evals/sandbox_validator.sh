@@ -26,7 +26,8 @@ api() {
 bootstrap_sandbox() {
   log "Bootstrapping sandbox..."
 
-  # List devices, find access-code-capable one
+  # Clean any orphaned access codes from prior runs on this device
+  log "Cleaning orphaned access codes..."
   local devices
   devices=$(api /devices/list)
   DEVICE_ID=$(echo "$devices" | python3 -c "
@@ -42,6 +43,22 @@ if capable:
     exit 1
   fi
   log "Found device: $DEVICE_ID"
+
+  # Delete any existing access codes on this device from prior runs
+  local existing_codes
+  existing_codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
+  echo "$existing_codes" | DEVICE_ID="$DEVICE_ID" python3 -c "
+import sys, json, subprocess, os
+codes = json.loads(sys.stdin.read()).get('access_codes', [])
+for c in codes:
+    subprocess.run(['curl', '-s', '-X', 'POST', 'https://connect.getseam.com/access_codes/delete',
+        '-H', 'Authorization: Bearer ${SEAM_API_KEY}',
+        '-H', 'Content-Type: application/json',
+        '-d', json.dumps({'access_code_id': c['access_code_id']})],
+        capture_output=True)
+if codes:
+    print(f'Cleaned {len(codes)} orphaned access codes', file=sys.stderr)
+" 2>&1 | while read -r line; do log "  $line"; done
 
   # Create space — use "unit-101" as space_key so the app's push_data call
   # (which uses the unit ID from the fixture's data model) finds this space.
