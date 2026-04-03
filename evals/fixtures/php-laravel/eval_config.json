@@ -1,0 +1,33 @@
+{
+  "fixture": "php-laravel",
+  "prompt": "I'm building a short-term rental property management system in PHP with Laravel. We have reservations with check-in/check-out times and want to automatically create access codes on smart locks when guests book. Our customers use August and Yale smart locks. We want property managers to connect their own locks without us building UI. We just want to push reservation data and have Seam handle the rest. We already have a Seam account with sandbox devices. Don't ask me any setup questions — explore the codebase and write the integration.",
+  "expected_api_path": "reservation_automations",
+  "seam_env_var": "SEAM_API_KEY",
+  "app_port": 8000,
+  "test_endpoints": {
+    "create": {
+      "method": "POST",
+      "path": "/api/reservations",
+      "payload": {
+        "guest_name": "Test Guest",
+        "guest_email": "eval_test_{{RUN_ID}}@example.com",
+        "property_id": "prop-1",
+        "unit_id": "unit-101",
+        "check_in": "{{STARTS_AT}}",
+        "check_out": "{{ENDS_AT}}"
+      },
+      "response_id_path": "reservation.id"
+    },
+    "update": {
+      "method": "PUT",
+      "path": "/api/reservations/{{RESERVATION_ID}}",
+      "payload": {
+        "check_out": "{{NEW_ENDS_AT}}"
+      }
+    },
+    "cancel": {
+      "method": "DELETE",
+      "path": "/api/reservations/{{RESERVATION_ID}}"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "expected_files_modified": [
+    "app/Services/ReservationService.php",
+    "app/Http/Controllers/ReservationController.php"
+  ],
+  "expected_new_files_allowed": [
+    "app/Services/SeamService.php",
+    "app/Http/Controllers/SeamWebhookController.php",
+    "config/seam.php"
+  ],
+  "expected_calls": {
+    "create": ["customers.push_data"],
+    "update": ["customers.push_data"],
+    "cancel": ["customers.delete_data"]
+  },
+  "expected_placements": {
+    "customers.push_data": ["createReservation", "updateReservation"],
+    "customers.delete_data": ["cancelReservation"]
+  },
+  "required_parameters": {
+    "push_data": ["customer_key", "reservations", "user_identities"],
+    "delete_data": ["customer_keys", "reservation_keys"]
+  },
+  "expected_package_additions": {
+    "composer.json": ["seam"]
+  }
+}

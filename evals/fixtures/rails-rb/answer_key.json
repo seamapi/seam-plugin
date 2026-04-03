@@ -1,0 +1,27 @@
+{
+  "expected_files_modified": [
+    "app/services/reservation_service.rb",
+    "app/controllers/api/reservations_controller.rb"
+  ],
+  "expected_new_files_allowed": [
+    "app/services/seam_service.rb",
+    "app/controllers/webhooks/seam_controller.rb",
+    "config/initializers/seam.rb"
+  ],
+  "expected_calls": {
+    "create": ["customers.push_data"],
+    "update": ["customers.push_data"],
+    "cancel": ["customers.delete_data"]
+  },
+  "expected_placements": {
+    "customers.push_data": ["create_reservation", "update_reservation"],
+    "customers.delete_data": ["cancel_reservation"]
+  },
+  "required_parameters": {
+    "push_data": ["customer_key", "reservations", "user_identities"],
+    "delete_data": ["customer_keys", "reservation_keys"]
+  },
+  "expected_package_additions": {
+    "Gemfile": ["seam"]
+  }
+}
