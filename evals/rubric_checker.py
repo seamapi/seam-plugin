@@ -355,7 +355,7 @@ def check_webhook_route_added(modified_files_content):
 
     all_content = _normalize_content("\n".join(modified_files_content.values()))
 
-    # Check for route with seam (case-insensitive) — supports Express, Flask, Rails, Laravel patterns
+    # Check for route with seam — supports Express, Flask, Rails, Laravel, Next.js patterns
     has_seam_route = bool(re.search(
         r'(?:'
         r'(?:router|app)\s*\.\s*(?:post|get|put|use)\s*\(\s*["\'/].*seam'  # Express
@@ -363,8 +363,17 @@ def check_webhook_route_added(modified_files_content):
         r'|post\s+["\'/].*seam'  # Rails
         r'|Route::post\s*\(\s*["\'/].*seam'  # Laravel
         r'|function\s+seam\s*\('  # PHP controller method named seam
+        r'|export\s+(?:async\s+)?function\s+POST'  # Next.js App Router handler
         r')',
         all_content, re.IGNORECASE))
+
+    # Also check if any new file path contains "seam" in a webhooks directory
+    # (catches Next.js app/api/webhooks/seam/route.ts)
+    if not has_seam_route:
+        for path in modified_files_content.keys():
+            if "webhook" in path.lower() and "seam" in path.lower():
+                has_seam_route = True
+                break
 
     if not has_seam_route:
         return 0.0

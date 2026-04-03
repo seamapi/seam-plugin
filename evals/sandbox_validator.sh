@@ -107,11 +107,17 @@ for s in spaces:
 ###############################################################################
 cleanup_sandbox() {
   log "Cleaning up sandbox resources..."
+  # Delete customer data with correct plural customer_keys and run-specific keys
+  if [ -n "${CUSTOMER_KEY:-}" ]; then
+    local delete_payload="{\"customer_keys\": [\"${CUSTOMER_KEY}\"]"
+    if [ -n "${RESERVATION_ID:-}" ]; then
+      delete_payload="${delete_payload}, \"reservation_keys\": [\"res_${RESERVATION_ID}\"]"
+    fi
+    delete_payload="${delete_payload}}"
+    api /customers/delete_data -d "$delete_payload" > /dev/null 2>&1 || true
+  fi
   if [ -n "${SPACE_ID:-}" ]; then
     api /spaces/delete -d "{\"space_id\": \"${SPACE_ID}\"}" > /dev/null 2>&1 || true
-  fi
-  if [ -n "${CUSTOMER_KEY:-}" ]; then
-    api /customers/delete_data -d "{\"customer_key\": \"${CUSTOMER_KEY}\"}" > /dev/null 2>&1 || true
   fi
   stop_app || true
 }
@@ -325,21 +331,42 @@ validate_update() {
 
   log "Response: ${response}"
 
-  # Wait 5s, then check that access code still exists
+  # Verify the specific access code still exists AND its ends_at was updated
+  # Poll for up to 30s since the update may take a moment to propagate
+  local new_ends_at
+  new_ends_at=$(echo "$EVAL_CONFIG" | python3 -c "import sys,json; print(json.loads(sys.stdin.read())['test_endpoints']['update']['payload'].get('checkOut', json.loads(sys.stdin.read())['test_endpoints']['update']['payload'].get('check_out', '')))" 2>/dev/null || echo "")
+  new_ends_at=$(resolve_payload "$new_ends_at")
+
+  log "Checking access code ${CREATED_CODE_ID:-unknown} updated (expected ends_at contains: ${new_ends_at:-any})..."
   sleep 5
 
-  local codes code_count
+  local codes update_ok
   codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
-  code_count=$(echo "$codes" | python3 -c "
-import sys, json
+  update_ok=$(echo "$codes" | CODE_ID="${CREATED_CODE_ID:-}" NEW_ENDS="${new_ends_at:-}" python3 -c "
+import sys, json, os
 codes = json.loads(sys.stdin.read())['access_codes']
-active = [c for c in codes if c.get('status') not in ('removing', 'removed')]
-print(len(active))
-" 2>/dev/null || echo "0")
+code_id = os.environ.get('CODE_ID', '')
+new_ends = os.environ.get('NEW_ENDS', '')
+if code_id:
+    match = [c for c in codes if c['access_code_id'] == code_id and c.get('status') not in ('removing', 'removed')]
+    if not match:
+        print('missing')  # code was deleted — update broke something
+    elif new_ends and new_ends not in match[0].get('ends_at', ''):
+        print('not_updated')  # code exists but ends_at wasn't changed
+    else:
+        print('ok')
+else:
+    # Fallback: just check any code exists
+    active = [c for c in codes if c.get('status') not in ('removing', 'removed')]
+    print('ok' if active else 'missing')
+" 2>/dev/null || echo "missing")
 
-  if [ "$code_count" -gt 0 ]; then
-    log "PASS: UPDATE validation succeeded (access code still present)"
+  if [ "$update_ok" = "ok" ]; then
+    log "PASS: UPDATE validation succeeded (access code present and updated)"
     return 0
+  elif [ "$update_ok" = "not_updated" ]; then
+    log "FAIL: Access code exists but ends_at was not updated"
+    return 1
   else
     log "FAIL: Access code missing after update"
     return 1

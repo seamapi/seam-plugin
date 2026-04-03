@@ -120,15 +120,17 @@ invoke_skill() {
   # Note: Claude CLI has no --cwd flag, so we cd into the working dir
   local claude_bin
   claude_bin=$(command -v claude 2>/dev/null || echo "claude")
+  local claude_log="${working_dir}/.claude_output.log"
   log "  Claude working in: ${working_dir}"
   (
     cd "$working_dir" && \
     "$claude_bin" --dangerously-skip-permissions -p "${prompt}" \
       --system-prompt "${skill_content}" \
-      --allowedTools Read,Write,Edit,Glob,Grep,Bash >/dev/null 2>/dev/null
+      --allowedTools Read,Write,Edit,Glob,Grep,Bash >"$claude_log" 2>&1
   ) &
   local claude_pid=$!
   local elapsed=0
+  local timed_out="no"
   while kill -0 "$claude_pid" 2>/dev/null; do
     sleep 5
     elapsed=$((elapsed + 5))
@@ -136,11 +138,33 @@ invoke_skill() {
       log "  WARNING: Claude timed out after 10 minutes, killing..."
       kill "$claude_pid" 2>/dev/null || true
       wait "$claude_pid" 2>/dev/null || true
+      timed_out="yes"
       break
     fi
     log "  ...Claude working (${elapsed}s)"
   done
-  wait "$claude_pid" 2>/dev/null || true
+
+  local claude_exit=0
+  if [ "$timed_out" = "no" ]; then
+    wait "$claude_pid" 2>/dev/null
+    claude_exit=$?
+  else
+    claude_exit=124  # timeout exit code
+  fi
+
+  if [ "$claude_exit" -ne 0 ]; then
+    log "  ERROR: Claude exited with code ${claude_exit}"
+    # Return failure — caller will skip scoring
+    return 1
+  fi
+
+  # Verify Claude actually modified files (empty diff = skill didn't do anything)
+  local changes
+  changes=$(cd "$working_dir" && git status --short 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$changes" = "0" ]; then
+    log "  WARNING: Claude ran but made no changes"
+    return 1
+  fi
 
   echo "$working_dir"
 }
@@ -287,8 +311,15 @@ for fixture in $FIXTURES; do
     WORKING_DIR=""
     if WORKING_DIR=$(invoke_skill "$FIXTURE_DIR"); then
       log "Skill invocation complete."
+      # Save Claude CLI logs for diagnosis
+      cp "${WORKING_DIR}/.claude_output.log" "${RESULTS_DIR}/claude.log" 2>/dev/null || true
     else
       log "WARNING: Skill invocation failed for ${fixture} run ${run}. Skipping."
+      # Still save logs if working dir exists
+      if [ -n "$WORKING_DIR" ] && [ -f "${WORKING_DIR}/.claude_output.log" ]; then
+        mkdir -p "$RESULTS_DIR"
+        cp "${WORKING_DIR}/.claude_output.log" "${RESULTS_DIR}/claude.log" 2>/dev/null || true
+      fi
       continue
     fi
 
