@@ -1,0 +1,34 @@
+{
+  "expected_files_modified": [
+    "blueprints/bookings.py",
+    "services/booking_service.py"
+  ],
+  "expected_new_files_allowed": [
+    "services/seam_service.py",
+    "blueprints/seam_webhooks.py",
+    "config/seam.py",
+    "lib/seam.py"
+  ],
+  "expected_calls": {
+    "create": ["access_grants.create"],
+    "update": ["access_grants.update"],
+    "cancel": ["access_grants.delete"]
+  },
+  "expected_placements": {
+    "access_grants.create": ["create_booking"],
+    "access_grants.update": ["update_booking"],
+    "access_grants.delete": ["cancel_booking"]
+  },
+  "required_parameters": {
+    "access_grants.create": [
+      "user_identity",
+      "device_ids",
+      "starts_at",
+      "ends_at"
+    ],
+    "access_grants.delete": ["access_grant_id"]
+  },
+  "expected_package_additions": {
+    "requirements.txt": ["seam"]
+  }
+}
