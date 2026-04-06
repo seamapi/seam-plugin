@@ -1,0 +1,34 @@
+{
+  "fixture": "hotel-nextjs-ts",
+  "prompt": "I'm building a boutique hotel booking system in TypeScript with Next.js App Router. We have room bookings with check-in/check-out times and want to give each guest a unique PIN code for their room door when they book. Our hotel uses Yale smart locks managed through Seam. We want to control exactly which access methods each guest gets — for now just PIN codes. We already have a Seam account with sandbox devices connected. Don't ask me any setup questions — explore the codebase and write the integration.",
+  "expected_api_path": "access_grants",
+  "seam_env_var": "SEAM_API_KEY",
+  "app_port": 3000,
+  "sandbox_skip_space": true,
+  "test_endpoints": {
+    "create": {
+      "method": "POST",
+      "path": "/api/bookings",
+      "payload": {
+        "guestName": "Test Guest",
+        "guestEmail": "eval_test_{{RUN_ID}}@example.com",
+        "guestPhone": "+15551234567",
+        "roomId": "room-101",
+        "checkIn": "{{STARTS_AT}}",
+        "checkOut": "{{ENDS_AT}}"
+      },
+      "response_id_path": "booking.id"
+    },
+    "update": {
+      "method": "PUT",
+      "path": "/api/bookings/{{RESERVATION_ID}}",
+      "payload": {
+        "checkOut": "{{NEW_ENDS_AT}}"
+      }
+    },
+    "cancel": {
+      "method": "DELETE",
+      "path": "/api/bookings/{{RESERVATION_ID}}"
+    }
+  }
+}

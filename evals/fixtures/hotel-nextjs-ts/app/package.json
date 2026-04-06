@@ -1,0 +1,21 @@
+{
+  "name": "eval-hotel-nextjs-ts",
+  "version": "1.0.0",
+  "description": "Minimal Next.js App Router hotel booking fixture for Seam integration evals",
+  "scripts": {
+    "build": "next build",
+    "start": "next start",
+    "dev": "next dev"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.3.3"
+  }
+}
