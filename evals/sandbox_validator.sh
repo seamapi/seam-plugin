@@ -292,6 +292,16 @@ validate_create() {
   payload=$(resolve_payload "$payload")
   path=$(resolve_payload "$path")
 
+  # Snapshot existing access code IDs BEFORE calling the create endpoint
+  # (the create may trigger accessGrants.create which adds a code immediately)
+  local pre_codes pre_code_ids
+  pre_codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
+  pre_code_ids=$(echo "$pre_codes" | python3 -c "
+import sys, json
+codes = json.loads(sys.stdin.read())['access_codes']
+print(','.join(c['access_code_id'] for c in codes))
+" 2>/dev/null || echo "")
+
   log "POST http://localhost:${HOST_PORT}${path}"
   log "Payload: ${payload}"
 
@@ -308,15 +318,6 @@ validate_create() {
     return 1
   fi
   log "Reservation created: ${RESERVATION_ID}"
-
-  # Snapshot existing access code IDs before polling (to detect NEW codes only)
-  local pre_codes pre_code_ids
-  pre_codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
-  pre_code_ids=$(echo "$pre_codes" | python3 -c "
-import sys, json
-codes = json.loads(sys.stdin.read())['access_codes']
-print(','.join(c['access_code_id'] for c in codes))
-" 2>/dev/null || echo "")
 
   # Poll Seam sandbox for a NEW access code to appear (up to 60s)
   log "Polling Seam for access codes on device (up to 60s)..."
