@@ -60,29 +60,36 @@ if codes:
     print(f'Cleaned {len(codes)} orphaned access codes', file=sys.stderr)
 " 2>&1 | while read -r line; do log "  $line"; done
 
-  # Create space — use "unit-101" as space_key so the app's push_data call
-  # (which uses the unit ID from the fixture's data model) finds this space.
-  # Also create with the eval RUN_ID key as a fallback in case the skill
-  # generates a different key format.
-  SPACE_KEY="unit-101"
-  CUSTOMER_KEY="prop-1"
+  # Check if this fixture needs space creation (Reservation Automations) or not (Access Grants, Lower-level)
+  local skip_space
+  skip_space=$(echo "$EVAL_CONFIG" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('sandbox_skip_space', False))" 2>/dev/null || echo "False")
 
-  # Try to create space; if it already exists, look it up instead
-  local space_result
-  space_result=$(api /spaces/create -d "{
-    \"name\": \"Unit 101 (eval ${RUN_ID})\",
-    \"space_key\": \"${SPACE_KEY}\",
-    \"device_ids\": [\"${DEVICE_ID}\"]
-  }")
+  if [ "$skip_space" = "True" ]; then
+    log "Skipping space creation (fixture uses device_ids directly)"
+    SPACE_KEY=""
+    SPACE_ID=""
+    CUSTOMER_KEY=""
+  else
+    # Create space — use "unit-101" as space_key so the app's push_data call
+    # (which uses the unit ID from the fixture's data model) finds this space.
+    SPACE_KEY="unit-101"
+    CUSTOMER_KEY="prop-1"
 
-  SPACE_ID=$(echo "$space_result" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('space',{}).get('space_id',''))")
+    # Try to create space; if it already exists, look it up instead
+    local space_result
+    space_result=$(api /spaces/create -d "{
+      \"name\": \"Unit 101 (eval ${RUN_ID})\",
+      \"space_key\": \"${SPACE_KEY}\",
+      \"device_ids\": [\"${DEVICE_ID}\"]
+    }")
 
-  if [ -z "$SPACE_ID" ]; then
-    # Space may already exist from a previous run — look it up
-    log "Space create returned error, looking up existing space..."
-    local spaces_result
-    spaces_result=$(api /spaces/list)
-    SPACE_ID=$(echo "$spaces_result" | SPACE_KEY="$SPACE_KEY" python3 -c "
+    SPACE_ID=$(echo "$space_result" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('space',{}).get('space_id',''))")
+
+    if [ -z "$SPACE_ID" ]; then
+      log "Space create returned error, looking up existing space..."
+      local spaces_result
+      spaces_result=$(api /spaces/list)
+      SPACE_ID=$(echo "$spaces_result" | SPACE_KEY="$SPACE_KEY" python3 -c "
 import sys, json, os
 spaces = json.loads(sys.stdin.read()).get('spaces', [])
 key = os.environ['SPACE_KEY']
@@ -91,14 +98,15 @@ for s in spaces:
         print(s['space_id'])
         break
 ")
-    if [ -z "$SPACE_ID" ]; then
-      log "ERROR: Failed to create or find space"
-      echo "$space_result" >&2
-      exit 1
+      if [ -z "$SPACE_ID" ]; then
+        log "ERROR: Failed to create or find space"
+        echo "$space_result" >&2
+        exit 1
+      fi
+      log "Found existing space: $SPACE_ID (key: $SPACE_KEY)"
+    else
+      log "Space created: $SPACE_ID (key: $SPACE_KEY)"
     fi
-    log "Found existing space: $SPACE_ID (key: $SPACE_KEY)"
-  else
-    log "Space created: $SPACE_ID (key: $SPACE_KEY)"
   fi
 }
 

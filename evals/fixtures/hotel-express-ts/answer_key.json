@@ -1,0 +1,29 @@
+{
+  "expected_files_modified": [
+    "src/services/bookingService.ts",
+    "src/routes/bookings.ts"
+  ],
+  "expected_new_files_allowed": [
+    "src/services/seamService.ts",
+    "src/routes/webhooks.ts",
+    "src/config/seam.ts",
+    "src/lib/seam.ts"
+  ],
+  "expected_calls": {
+    "create": ["access_grants.create"],
+    "update": ["access_grants.update"],
+    "cancel": ["access_grants.delete"]
+  },
+  "expected_placements": {
+    "access_grants.create": ["createBooking"],
+    "access_grants.update": ["updateBooking"],
+    "access_grants.delete": ["cancelBooking"]
+  },
+  "required_parameters": {
+    "access_grants.create": ["user_identity", "device_ids", "starts_at", "ends_at"],
+    "access_grants.delete": ["access_grant_id"]
+  },
+  "expected_package_additions": {
+    "package.json": ["seam"]
+  }
+}
