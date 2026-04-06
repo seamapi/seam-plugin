@@ -44,21 +44,47 @@ if capable:
   fi
   log "Found device: $DEVICE_ID"
 
+  # Delete any existing access grants from prior runs
+  local existing_grants
+  existing_grants=$(api /access_grants/list)
+  local grant_count
+  grant_count=$(echo "$existing_grants" | python3 -c "
+import sys, json
+grants = json.loads(sys.stdin.read()).get('access_grants', [])
+print(len(grants))
+" 2>/dev/null || echo "0")
+  if [ "$grant_count" -gt 0 ]; then
+    echo "$existing_grants" | python3 -c "
+import sys, json
+grants = json.loads(sys.stdin.read()).get('access_grants', [])
+for g in grants:
+    print(g['access_grant_id'])
+" 2>/dev/null | while read -r grant_id; do
+      api /access_grants/delete -d "{\"access_grant_id\": \"${grant_id}\"}" > /dev/null 2>&1 || true
+    done
+    log "  Cleaned ${grant_count} orphaned access grants"
+  fi
+
   # Delete any existing access codes on this device from prior runs
   local existing_codes
   existing_codes=$(api /access_codes/list -d "{\"device_id\":\"${DEVICE_ID}\"}")
-  echo "$existing_codes" | DEVICE_ID="$DEVICE_ID" python3 -c "
-import sys, json, subprocess, os
+  local code_count
+  code_count=$(echo "$existing_codes" | python3 -c "
+import sys, json
+codes = json.loads(sys.stdin.read()).get('access_codes', [])
+print(len(codes))
+" 2>/dev/null || echo "0")
+  if [ "$code_count" -gt 0 ]; then
+    echo "$existing_codes" | python3 -c "
+import sys, json
 codes = json.loads(sys.stdin.read()).get('access_codes', [])
 for c in codes:
-    subprocess.run(['curl', '-s', '-X', 'POST', 'https://connect.getseam.com/access_codes/delete',
-        '-H', 'Authorization: Bearer ${SEAM_API_KEY}',
-        '-H', 'Content-Type: application/json',
-        '-d', json.dumps({'access_code_id': c['access_code_id']})],
-        capture_output=True)
-if codes:
-    print(f'Cleaned {len(codes)} orphaned access codes', file=sys.stderr)
-" 2>&1 | while read -r line; do log "  $line"; done
+    print(c['access_code_id'])
+" 2>/dev/null | while read -r code_id; do
+      api /access_codes/delete -d "{\"access_code_id\": \"${code_id}\"}" > /dev/null 2>&1 || true
+    done
+    log "  Cleaned ${code_count} orphaned access codes"
+  fi
 
   # Check if this fixture needs space creation (Reservation Automations) or not (Access Grants, Lower-level)
   local skip_space
