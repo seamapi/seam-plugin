@@ -1,0 +1,32 @@
+{
+  "expected_files_modified": [
+    "app/Services/BookingService.php",
+    "app/Http/Controllers/BookingController.php",
+    "app/Http/Controllers/WebhookController.php",
+    "routes/api.php",
+    "composer.json"
+  ],
+  "expected_new_files_allowed": [
+    "app/Services/SeamService.php",
+    "app/Http/Controllers/SeamWebhookController.php",
+    "config/seam.php",
+    "config/services.php"
+  ],
+  "expected_calls": {
+    "create": ["access_codes.create"],
+    "update": ["access_codes.update"],
+    "cancel": ["access_codes.delete"]
+  },
+  "expected_placements": {
+    "access_codes.create": ["createBooking"],
+    "access_codes.update": ["updateBooking"],
+    "access_codes.delete": ["cancelBooking"]
+  },
+  "required_parameters": {
+    "access_codes.create": ["device_id", "starts_at", "ends_at"],
+    "access_codes.delete": ["access_code_id"]
+  },
+  "expected_package_additions": {
+    "composer.json": ["seam"]
+  }
+}

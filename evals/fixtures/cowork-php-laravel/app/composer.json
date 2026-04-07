@@ -1,0 +1,24 @@
+{
+    "name": "eval/cowork-php-laravel",
+    "description": "Minimal PHP Laravel coworking space booking fixture for evals",
+    "type": "project",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "~11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
