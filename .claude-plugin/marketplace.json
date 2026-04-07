@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "seam-integration",
-      "source": ".",
+      "source": "./",
       "description": "Three Seam integration skills (Reservation Automations, Access Grants, Access Codes) plus the Seam docs MCP server for real-time API reference.",
       "version": "0.5.0"
     }
