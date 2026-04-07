@@ -1,0 +1,16 @@
+{
+  "name": "seam",
+  "displayName": "Seam",
+  "version": "0.5.0",
+  "description": "Smart lock integration skills for Seam. Three focused skills: Reservation Automations (push data, Seam handles codes), Access Grants (per-door credential control), and Access Codes (direct manual control). Includes the Seam docs MCP server for real-time API reference.",
+  "author": {
+    "name": "Seam",
+    "email": "support@seam.co"
+  },
+  "homepage": "https://github.com/seamapi/seam-plugin",
+  "repository": "https://github.com/seamapi/seam-plugin",
+  "license": "MIT",
+  "keywords": ["seam", "smart-locks", "access-codes", "access-grants", "iot", "pms", "hotel", "coworking"],
+  "category": "developer-tools",
+  "tags": ["smart-locks", "access-control", "iot", "property-management"]
+}

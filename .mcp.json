@@ -1,0 +1,6 @@
+{
+  "seam-docs": {
+    "command": "npx",
+    "args": ["-y", "mcp-remote", "https://mcp.seam.co/mcp"]
+  }
+}
