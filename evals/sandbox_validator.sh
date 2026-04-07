@@ -192,20 +192,43 @@ start_app() {
   # For Access Grants fixtures, the app needs to know which device to target.
   # We expose DEVICE_ID under multiple common env var names so the skill
   # can find it regardless of what convention Claude uses.
+  # Build device ID env vars dynamically from room/unit IDs in the fixture's seed data.
+  # Claude generates various env var naming conventions, so we inject all common patterns
+  # for every room/unit ID found in the eval config test payloads.
+  local device_env_args=""
+  device_env_args="-e SEAM_DEVICE_ID=${DEVICE_ID}"
+
+  # Extract room/unit IDs from the create payload (roomId, room_id, unitId, unit_id)
+  local room_ids
+  room_ids=$(echo "$EVAL_CONFIG" | python3 -c "
+import sys, json
+config = json.loads(sys.stdin.read())
+payload = config.get('test_endpoints', {}).get('create', {}).get('payload', {})
+ids = []
+for key in ('roomId', 'room_id', 'unitId', 'unit_id'):
+    if key in payload:
+        ids.append(payload[key])
+print(' '.join(ids))
+" 2>/dev/null || echo "")
+
+  for room_id in $room_ids; do
+    # Normalize: room-a1 → ROOM_A1, unit-101 → UNIT_101, room_a1 → ROOM_A1
+    local normalized
+    normalized=$(echo "$room_id" | tr '[:lower:]-' '[:upper:]_')
+    device_env_args="${device_env_args} -e SEAM_DEVICE_${normalized}=${DEVICE_ID}"
+    device_env_args="${device_env_args} -e SEAM_DEVICE_ID_${normalized}=${DEVICE_ID}"
+    # Also without prefix: SEAM_DEVICE_A1, SEAM_DEVICE_101
+    local short
+    short=$(echo "$normalized" | sed 's/^ROOM_//;s/^UNIT_//')
+    device_env_args="${device_env_args} -e SEAM_DEVICE_${short}=${DEVICE_ID}"
+    device_env_args="${device_env_args} -e SEAM_DEVICE_ID_${short}=${DEVICE_ID}"
+  done
+
   CONTAINER_ID=$(docker run -d \
     --name "${CONTAINER_NAME}" \
     -p "${HOST_PORT}:${APP_PORT}" \
     -e "${SEAM_ENV_VAR}=${SEAM_API_KEY}" \
-    -e "SEAM_DEVICE_ID=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ROOM_101=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ROOM_205=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ROOM_PH1=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ID_ROOM_101=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ID_ROOM_205=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ID_ROOM_PH1=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ID_101=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ID_205=${DEVICE_ID}" \
-    -e "SEAM_DEVICE_ID_PH1=${DEVICE_ID}" \
+    ${device_env_args} \
     "${image_tag}")
 
   log "Container started: ${CONTAINER_ID:0:12} on port ${HOST_PORT}"
