@@ -200,6 +200,12 @@ start_app() {
     -e "SEAM_DEVICE_ROOM_101=${DEVICE_ID}" \
     -e "SEAM_DEVICE_ROOM_205=${DEVICE_ID}" \
     -e "SEAM_DEVICE_ROOM_PH1=${DEVICE_ID}" \
+    -e "SEAM_DEVICE_ID_ROOM_101=${DEVICE_ID}" \
+    -e "SEAM_DEVICE_ID_ROOM_205=${DEVICE_ID}" \
+    -e "SEAM_DEVICE_ID_ROOM_PH1=${DEVICE_ID}" \
+    -e "SEAM_DEVICE_ID_101=${DEVICE_ID}" \
+    -e "SEAM_DEVICE_ID_205=${DEVICE_ID}" \
+    -e "SEAM_DEVICE_ID_PH1=${DEVICE_ID}" \
     "${image_tag}")
 
   log "Container started: ${CONTAINER_ID:0:12} on port ${HOST_PORT}"
