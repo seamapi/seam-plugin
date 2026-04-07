@@ -1,11 +1,17 @@
 {
   "name": "seamapi",
-  "description": "Seam integration skills for AI coding assistants — smart lock access code automation",
+  "owner": {
+    "name": "Seam",
+    "email": "support@seam.co"
+  },
+  "metadata": {
+    "description": "Seam integration skills for AI coding assistants — smart lock access code automation"
+  },
   "plugins": [
     {
       "name": "seam-integration",
-      "description": "Three Seam integration skills (Reservation Automations, Access Grants, Access Codes) plus the Seam docs MCP server for real-time API reference.",
       "source": ".",
+      "description": "Three Seam integration skills (Reservation Automations, Access Grants, Access Codes) plus the Seam docs MCP server for real-time API reference.",
       "version": "0.5.0"
     }
   ]
