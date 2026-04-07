@@ -47,25 +47,27 @@ pip install seam
 bundle add seam
 ```
 
-Add SDK initialization near the top of the reservation service file:
+Add SDK initialization near the top of the service file.
+
+**CRITICAL for Next.js / Vercel:** `new Seam()` at module scope BREAKS `next build` because env vars aren't available at build time. You MUST use this lazy getter pattern instead — this is the ONLY correct way to initialize Seam in Next.js:
 
 ```typescript
-// TypeScript/JavaScript
-import { Seam } from "seam";
-const seam = new Seam({ apiKey: process.env.SEAM_API_KEY });
-```
-
-**Next.js / Vercel:** Do NOT initialize the Seam client at module scope — it runs during `next build` when env vars aren't available. Use a lazy getter instead:
-
-```typescript
-// Next.js — lazy initialization
+// Next.js — REQUIRED lazy initialization (module-scope new Seam() breaks next build)
 import { Seam } from "seam";
 let _seam: Seam;
 function getSeam() {
   if (!_seam) _seam = new Seam({ apiKey: process.env.SEAM_API_KEY! });
   return _seam;
 }
-// Then use getSeam() instead of seam in your handlers
+// Use getSeam() everywhere instead of a top-level seam variable
+```
+
+For Express/non-Next.js TypeScript, module-scope is fine:
+
+```typescript
+// Express / standard Node.js
+import { Seam } from "seam";
+const seam = new Seam({ apiKey: process.env.SEAM_API_KEY });
 ```
 
 ```python
