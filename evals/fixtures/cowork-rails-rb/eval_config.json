@@ -1,0 +1,34 @@
+{
+  "fixture": "cowork-rails-rb",
+  "prompt": "I'm building a coworking space room booking platform in Ruby on Rails. Members book meeting rooms with smart locks. We manage our own member access system and just need Seam to create and delete access codes on the locks when members book rooms. We use Schlage smart locks managed through Seam. We need full manual control over individual access codes. We already have a Seam account with sandbox devices connected. Don't ask me any setup questions — explore the codebase and write the integration.",
+  "expected_api_path": "lower_level",
+  "seam_env_var": "SEAM_API_KEY",
+  "app_port": 3000,
+  "sandbox_skip_space": true,
+  "test_endpoints": {
+    "create": {
+      "method": "POST",
+      "path": "/api/bookings",
+      "payload": {
+        "member_name": "Test Member",
+        "member_email": "eval_test_{{RUN_ID}}@example.com",
+        "member_company": "Test Corp",
+        "room_id": "room-a1",
+        "start_time": "{{STARTS_AT}}",
+        "end_time": "{{ENDS_AT}}"
+      },
+      "response_id_path": "booking.id"
+    },
+    "update": {
+      "method": "PUT",
+      "path": "/api/bookings/{{RESERVATION_ID}}",
+      "payload": {
+        "end_time": "{{NEW_ENDS_AT}}"
+      }
+    },
+    "cancel": {
+      "method": "DELETE",
+      "path": "/api/bookings/{{RESERVATION_ID}}"
+    }
+  }
+}

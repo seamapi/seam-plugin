@@ -1,0 +1,31 @@
+{
+  "expected_files_modified": [
+    "app/services/booking_service.rb",
+    "app/controllers/api/bookings_controller.rb",
+    "app/controllers/webhooks_controller.rb",
+    "config/routes.rb",
+    "Gemfile"
+  ],
+  "expected_new_files_allowed": [
+    "app/services/seam_service.rb",
+    "app/controllers/webhooks/seam_controller.rb",
+    "config/initializers/seam.rb"
+  ],
+  "expected_calls": {
+    "create": ["access_codes.create"],
+    "update": ["access_codes.update"],
+    "cancel": ["access_codes.delete"]
+  },
+  "expected_placements": {
+    "access_codes.create": ["create_booking"],
+    "access_codes.update": ["update_booking"],
+    "access_codes.delete": ["cancel_booking"]
+  },
+  "required_parameters": {
+    "access_codes.create": ["device_id", "starts_at", "ends_at"],
+    "access_codes.delete": ["access_code_id"]
+  },
+  "expected_package_additions": {
+    "Gemfile": ["seam"]
+  }
+}
