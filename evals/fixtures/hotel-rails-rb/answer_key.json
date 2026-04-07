@@ -1,7 +1,10 @@
 {
   "expected_files_modified": [
     "app/services/booking_service.rb",
-    "app/controllers/api/bookings_controller.rb"
+    "app/controllers/api/bookings_controller.rb",
+    "app/controllers/webhooks_controller.rb",
+    "config/routes.rb",
+    "Gemfile"
   ],
   "expected_new_files_allowed": [
     "app/services/seam_service.rb",

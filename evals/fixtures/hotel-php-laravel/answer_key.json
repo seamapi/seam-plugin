@@ -1,12 +1,15 @@
 {
   "expected_files_modified": [
     "app/Services/BookingService.php",
-    "app/Http/Controllers/BookingController.php"
+    "app/Http/Controllers/BookingController.php",
+    "app/Http/Controllers/WebhookController.php",
+    "routes/api.php"
   ],
   "expected_new_files_allowed": [
     "app/Services/SeamService.php",
     "app/Http/Controllers/SeamWebhookController.php",
-    "config/seam.php"
+    "config/seam.php",
+    "config/services.php"
   ],
   "expected_calls": {
     "create": ["access_grants.create"],

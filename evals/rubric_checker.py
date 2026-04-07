@@ -108,11 +108,11 @@ def _normalize_content(content):
 
 def check_api_path_match(modified_files_content, eval_config):
     """Check that the expected API path signature is found and wrong ones aren't."""
-    # Each path maps to multiple signatures (snake_case REST + camelCase SDK)
+    # Each path maps to multiple signatures (snake_case, camelCase, URL-path)
     path_signatures = {
-        "reservation_automations": ["push_data", "pushData"],
-        "access_grants": ["access_grants.create", "accessGrants.create"],
-        "lower_level": ["access_codes.create", "accessCodes.create"],
+        "reservation_automations": ["push_data", "pushData", "/customers/push_data"],
+        "access_grants": ["access_grants.create", "accessGrants.create", "/access_grants/create"],
+        "lower_level": ["access_codes.create", "accessCodes.create", "/access_codes/create"],
     }
 
     expected_path = eval_config.get("expected_api_path", "")
@@ -124,12 +124,22 @@ def check_api_path_match(modified_files_content, eval_config):
 
     found_expected = any(sig in all_content for sig in expected_sigs)
 
-    # Check for wrong signatures
+    # Check for wrong signatures — only in actual code, not in comments/prose
+    # Strip comment lines and markdown-style text to reduce false positives
+    code_lines = []
+    for line in all_content.split("\n"):
+        stripped = line.strip()
+        # Skip comment lines (// # -- /* *) and markdown
+        if stripped.startswith(("//", "#", "--", "/*", "*", "```", "|", ">")):
+            continue
+        code_lines.append(line)
+    code_only = "\n".join(code_lines)
+
     wrong_sigs = []
     for path, sigs in path_signatures.items():
         if path != expected_path:
             wrong_sigs.extend(sigs)
-    found_wrong = any(sig in all_content for sig in wrong_sigs)
+    found_wrong = any(sig in code_only for sig in wrong_sigs)
 
     if found_expected and not found_wrong:
         return 1.0

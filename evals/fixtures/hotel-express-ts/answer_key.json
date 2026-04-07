@@ -1,11 +1,14 @@
 {
   "expected_files_modified": [
     "src/services/bookingService.ts",
-    "src/routes/bookings.ts"
+    "src/routes/bookings.ts",
+    "src/models/types.ts",
+    "src/models/store.ts",
+    "src/routes/webhooks.ts",
+    "package.json"
   ],
   "expected_new_files_allowed": [
     "src/services/seamService.ts",
-    "src/routes/webhooks.ts",
     "src/config/seam.ts",
     "src/lib/seam.ts"
   ],

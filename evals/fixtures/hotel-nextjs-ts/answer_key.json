@@ -2,7 +2,10 @@
   "expected_files_modified": [
     "src/lib/services/bookingService.ts",
     "src/app/api/bookings/route.ts",
-    "src/app/api/bookings/[id]/route.ts"
+    "src/app/api/bookings/[id]/route.ts",
+    "src/lib/models/types.ts",
+    "src/lib/models/store.ts",
+    "package.json"
   ],
   "expected_new_files_allowed": [
     "src/lib/services/seamService.ts",

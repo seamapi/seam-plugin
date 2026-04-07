@@ -1,7 +1,12 @@
 {
   "expected_files_modified": [
+    "services/booking_service.py",
     "blueprints/bookings.py",
-    "services/booking_service.py"
+    "blueprints/webhooks.py",
+    "models/booking.py",
+    "models/room.py",
+    "models/store.py",
+    "requirements.txt"
   ],
   "expected_new_files_allowed": [
     "services/seam_service.py",
@@ -20,12 +25,7 @@
     "access_grants.delete": ["cancel_booking"]
   },
   "required_parameters": {
-    "access_grants.create": [
-      "user_identity",
-      "device_ids",
-      "starts_at",
-      "ends_at"
-    ],
+    "access_grants.create": ["user_identity", "device_ids", "starts_at", "ends_at"],
     "access_grants.delete": ["access_grant_id"]
   },
   "expected_package_additions": {
