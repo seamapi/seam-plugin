@@ -1,6 +1,9 @@
 {
-  "seam-docs": {
-    "command": "npx",
-    "args": ["-y", "mcp-remote", "https://mcp.seam.co/mcp"]
+  "mcpServers": {
+    "seam-docs": {
+      "type": "http",
+      "url": "https://mcp.seam.co/mcp",
+      "note": "Seam documentation MCP server. No authentication required."
+    }
   }
 }
