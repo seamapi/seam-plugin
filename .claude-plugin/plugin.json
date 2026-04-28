@@ -9,7 +9,15 @@
   "homepage": "https://github.com/seamapi/seam-plugin",
   "repository": "https://github.com/seamapi/seam-plugin",
   "license": "MIT",
-  "keywords": ["seam", "smart-locks", "smart-home", "smart-devices", "access-codes", "access-grants", "access-control", "iot", "pms", "hotel", "coworking", "thermostats", "sensors", "device-database", "yale", "schlage", "kwikset", "august", "igloo", "salto", "brivo", "dormakaba"],
+  "keywords": [
+    "seam", "smart-locks", "smart-home", "smart-devices", "access-codes", "access-grants", "access-control",
+    "iot", "pms", "hotel", "coworking", "thermostats", "sensors", "device-database", "garage-openers", "intercoms",
+    "2n", "33-lock", "4suites", "akiles", "assa-abloy", "august", "avigilon-alta", "brivo",
+    "controlbyweb", "dormakaba", "ecobee", "genie", "google-nest", "honeywell", "hotek",
+    "igloohome", "keynest", "kwikset", "latch", "lockly", "minut", "noiseaware", "nuki",
+    "pti-storlogix", "salto", "schlage", "sensi", "smartthings", "tedee", "ttlock",
+    "ultraloq", "wyze", "yale"
+  ],
   "skills": "./skills/",
   "mcpServers": {
     "seam-docs": {
