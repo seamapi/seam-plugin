@@ -5,7 +5,7 @@
     "email": "support@seam.co"
   },
   "metadata": {
-    "description": "Build smart lock and access control integrations with Seam. Search API docs, browse 400+ supported device models, and automate access code management."
+    "description": "Seam integration skills for AI coding assistants — build smart lock and access control integrations. Search API docs, browse 1000+ supported device models, and automate access management."
   },
   "plugins": [
     {
@@ -14,7 +14,7 @@
         "source": "github",
         "repo": "seamapi/seam-plugin"
       },
-      "description": "Three skills for Seam access code automation (Reservation Automations, Access Grants, Access Codes) plus semantic search across Seam's API docs and 400+ supported device models.",
+      "description": "Three Seam integration skills (Reservation Automations, Access Grants, Access Codes) plus semantic search across Seam's API docs and 1000+ supported device models.",
       "version": "0.5.0"
     }
   ]

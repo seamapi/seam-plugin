@@ -1,7 +1,7 @@
 {
   "name": "seam",
   "version": "0.5.0",
-  "description": "Build smart lock and access control integrations with Seam. Three skills for access code automation (Reservation Automations, Access Grants, Access Codes) plus semantic search across Seam's API docs and 400+ supported device models.",
+  "description": "Build smart lock and access control integrations with Seam. Three skills for access automation (Reservation Automations, Access Grants, Access Codes) plus semantic search across Seam's API docs and 1000+ supported device models.",
   "author": {
     "name": "Seam",
     "url": "https://seam.co"
@@ -9,7 +9,7 @@
   "homepage": "https://github.com/seamapi/seam-plugin",
   "repository": "https://github.com/seamapi/seam-plugin",
   "license": "MIT",
-  "keywords": ["seam", "smart-locks", "access-codes", "access-grants", "access-control", "iot", "pms", "hotel", "coworking", "thermostats", "device-database"],
+  "keywords": ["seam", "smart-locks", "smart-home", "smart-devices", "access-codes", "access-grants", "access-control", "iot", "pms", "hotel", "coworking", "thermostats", "sensors", "device-database", "yale", "schlage", "kwikset", "august", "igloo", "salto", "brivo", "dormakaba"],
   "skills": "./skills/",
   "mcpServers": {
     "seam-docs": {
