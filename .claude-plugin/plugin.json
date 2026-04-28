@@ -1,7 +1,7 @@
 {
   "name": "seam",
   "version": "0.5.0",
-  "description": "Three focused skills for integrating Seam smart lock access codes: Reservation Automations (push data, Seam handles codes), Access Grants (per-door credential control), and Access Codes (direct manual control). Bundles the Seam docs MCP server.",
+  "description": "Build smart lock and access control integrations with Seam. Three skills for access code automation (Reservation Automations, Access Grants, Access Codes) plus semantic search across Seam's API docs and 400+ supported device models.",
   "author": {
     "name": "Seam",
     "url": "https://seam.co"
@@ -9,7 +9,7 @@
   "homepage": "https://github.com/seamapi/seam-plugin",
   "repository": "https://github.com/seamapi/seam-plugin",
   "license": "MIT",
-  "keywords": ["seam", "smart-locks", "access-codes", "access-grants", "iot", "pms", "hotel", "coworking"],
+  "keywords": ["seam", "smart-locks", "access-codes", "access-grants", "access-control", "iot", "pms", "hotel", "coworking", "thermostats", "device-database"],
   "skills": "./skills/",
   "mcpServers": {
     "seam-docs": {
