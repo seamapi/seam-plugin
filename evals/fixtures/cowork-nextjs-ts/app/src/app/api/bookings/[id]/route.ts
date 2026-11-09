@@ -7,10 +7,10 @@ import {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const booking = getBooking(params.id);
+    const booking = getBooking((await params).id);
     return NextResponse.json({ booking });
   } catch (err: any) {
     if (err.message?.includes("not found")) {
@@ -22,12 +22,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { startTime, endTime } = body;
-    const booking = updateBooking(params.id, { startTime, endTime });
+    const booking = updateBooking((await params).id, { startTime, endTime });
     return NextResponse.json({ booking }, { status: 200 });
   } catch (err: any) {
     if (err.message?.includes("not found")) {
@@ -39,10 +39,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const booking = cancelBooking(params.id);
+    const booking = cancelBooking((await params).id);
     return NextResponse.json({ booking }, { status: 200 });
   } catch (err: any) {
     if (err.message?.includes("not found")) {
